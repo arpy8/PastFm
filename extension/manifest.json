@@ -1,0 +1,14 @@
+{
+    "name": "BlastFM",
+    "version": "1.0.0",
+    "description": "Fetch latest music data from youtube",
+    "manifest_version": 3,
+    "author": "Arpit Sengar (arpy8)",
+    "background": {
+        "service_worker": "background.js"
+    },
+    "action": {
+        "default_popup": "index.html",
+        "default_title": "BlastFM"
+    }
+}

@@ -1,0 +1,17 @@
+[project]
+name = "python-api"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "bs4>=0.0.2",
+    "fastapi>=0.115.12",
+    "google-api-python-client>=2.166.0",
+    "ipykernel>=6.29.5",
+    "pillow>=11.1.0",
+    "python-dotenv>=1.1.0",
+    "requests>=2.32.3",
+    "uvicorn>=0.34.0",
+    "websockets>=15.0.1",
+]
