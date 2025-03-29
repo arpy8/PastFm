@@ -1,141 +1,119 @@
-import os
-import atexit
-import numpy as np
-import json, requests
-from PIL import Image
-import tensorflow as tf
-from pathlib import Path
+import json
+import logging
+import uvicorn
+
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import RedirectResponse, Response, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from starlette.responses import RedirectResponse
-from database import update_data_field, cleanup
-from fastapi import FastAPI, UploadFile, HTTPException, Security, Depends
-from fastapi.security import APIKeyHeader
-from constants import example_data
 
+from utils import generate_css_bar, SongDetailFetcher
+from db import get_data, update_local_db, update_remote_db
 
-DRISHTI_AUTH_KEY = os.environ.get("DRISHTI_AUTH_KEY")
-DRISHTI_AUTH_KEY_NAME = os.environ.get("DRISHTI_AUTH_KEY_NAME")
-
-if not DRISHTI_AUTH_KEY:
-    raise ValueError("DRISHTI_AUTH_KEY environment variable must be set")
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class Item(BaseModel):
-    uuid: str
-    time: str
-    humidity: str
-    temperature: str
-    soil_moisture: str
+    url: str
 
+app = FastAPI(title="PastFm Backend", description="Welcome to PastFm's Backend", version="1.0")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*", "chrome-extension://*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-api_key_header = APIKeyHeader(name=DRISHTI_AUTH_KEY_NAME, auto_error=True)
+templates = Jinja2Templates(directory="templates")
 
-async def verify_api_key(api_key: str = Security(api_key_header)):
-    if api_key != DRISHTI_AUTH_KEY:
-        raise HTTPException(
-            status_code=403,
-            detail="Invalid API key",
-        )
-    return api_key
-
-mongo_string = os.environ.get("MONGO_STRING")
-app = FastAPI(title="Dristhi Backend", description="APIs for Dristhi", version="1.0")
-
-def load_model():
-    model_path = (
-        Path(__file__).resolve().parent.parent
-        / "weights"
-        / "plant_disease_classifier.h5"
-    )
-    model = tf.keras.models.load_model(model_path)
-    return model
 
 @app.get("/")
-async def display() -> str:
-    # response = RedirectResponse(url='https://github.com/epicshi')
-    return "Welcome to Dristhi Backend"
+async def display() -> RedirectResponse:
+    return RedirectResponse(url="https://github.com/arpy8/PastFm")
 
-@app.post("/predict")
-async def predict(
-    file: UploadFile,
-    api_key: str = Depends(verify_api_key)
-) -> str:
-    model = load_model()
-
-    original_image = Image.open(file.file).convert("RGB")
-    preprocessed_image = original_image.resize((256, 256))
-    preprocessed_image = np.array(preprocessed_image)[:, :, :3] / 255.0
-    preds = model.predict(np.expand_dims(preprocessed_image, axis=0))
-
-    labels = ["Healthy", "Powdery", "Rust"]
-    preds_class = np.argmax(preds)
-    preds_label = labels[preds_class]
-
-    return preds_label
-
-@app.post("/update-data")
-async def update_data(
-    item: Item,
-    api_key: str = Depends(verify_api_key)
-) -> str:
-    if (
-        item.humidity.lower() == "nan"
-        or item.temperature.lower() == "nan"
-        or item.soil_moisture.lower() == "nan"
-    ):
-        return "Invalid data"
-
-    return update_data_field(
-        str(item.uuid),
-        {
-            "timestamp": int(item.time),
-            "humidity": float(item.humidity),
-            "temperature": float(item.temperature),
-            "soil_moisture": float(item.soil_moisture),
-        },
-    )
-
-@app.get("/fetch-news")
-async def fetch_news(
-    api_key: str = Depends(verify_api_key)
-):
-    news_api_key = os.environ.get("NEWS_API_KEY")
-    if not news_api_key:
-        raise HTTPException(
-            status_code=500,
-            detail="News API key not configured"
+@app.post("/update")
+async def update_data(item: Item) -> JSONResponse:
+    if item.url.lower() == "nan":
+        return JSONResponse(
+            content={"success": False, "message": "Invalid URL provided"},
+            status_code=400
         )
     
-    response = requests.get(
-        'https://newsapi.org/v2/everything',
-        params={
-            'q': '(farmer OR agriculture OR "rural development" OR "farm laws" OR kisaan OR kisan) AND (India OR Maharashtra OR Punjab OR Karnataka OR "Uttar Pradesh")',
-            'language': 'en',
-            'sortBy': 'publishedAt',
-            'apiKey': news_api_key
+    try:
+        song_details = SongDetailFetcher()
+        result = song_details.get_details(item.url)
+        logger.info(f"Fetched details: {result}")
+        
+        if not result:
+            return JSONResponse(
+                content={"success": False, "message": "Failed to fetch song details"},
+                status_code=404
+            )
+        
+        local_success, local_message = update_local_db(result)
+        remote_success, remote_message = update_remote_db(result)
+        
+        if local_success and remote_success:
+            return JSONResponse(
+                content={"success": True, "message": "Data updated successfully!"},
+                status_code=200
+            )
+        else:
+            return JSONResponse(
+                content={
+                    "success": False,
+                    "message": f"Database update failed: {local_message if not local_success else ''}{remote_message if not remote_success else ''}"
+                },
+                status_code=500
+            )
+    except Exception as e:
+        logger.error(f"Error processing request: {str(e)}")
+        return JSONResponse(
+            content={"success": False, "message": f"Error: {str(e)}"},
+            status_code=500
+        )
+
+@app.get("/render")
+async def spotify_banner(request: Request) -> Response:
+    try:
+        num_bar = 75
+        css_bar = generate_css_bar(num_bar)
+
+        data = get_data()
+        if not data:
+            raise HTTPException(status_code=404, detail="No data available")
+            
+        time, song, artist, url, thumbnail = data[-1]
+        logger.info(f"Rendering banner for: {time}, {song}, {artist}, {url}")
+        
+        context = {
+            "height": "435",
+            "background_color": "#000000",
+            "bar_color": "#ff0000",
+            "title_text": "Now playing",
+            "song_name": song,
+            "artist_name": artist,
+            "content_bar": "".join(["<div class='bar'></div>" for i in range(num_bar)]),
+            "thumbnail": thumbnail.decode("utf-8"),
+            "cover_image": True,
+            "css_bar": css_bar,
+            "url": url
         }
-    )
-    if response.status_code != 200:
-        # print(response.content)
-        # raise HTTPException(
-        #     status_code=500,
-        #     detail="News API request failed"
-        # )
-        return example_data
-    
-    return json.loads(response.content)
-
-
-@app.get("/last-data")
-async def last_data(    
-    api_key: str = Depends(verify_api_key)
-):
-    return "returns last 10 data"
-
+        
+        svg_content = templates.get_template("default_theme.html").render(context)
+        
+        return Response(
+            content=svg_content,
+            media_type="image/svg+xml"
+        )
+    except Exception as e:
+        logger.error(f"Error rendering banner: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error rendering banner: {str(e)}")
 
 if __name__ == "__main__":
-    import uvicorn
-    try:
-        uvicorn.run("main:app", host="0.0.0.0", port=7860, reload=True)
-    finally:
-        cleanup()
-        atexit.register(cleanup)
+    uvicorn.run("api:app", host="0.0.0.0", port=8000, reload=True)

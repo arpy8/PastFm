@@ -1,7 +1,5 @@
 FROM python:3.11.10
 
-WORKDIR /code
-
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         gcc \
@@ -24,4 +22,4 @@ EXPOSE 7860
 
 # ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "main.py"]
+CMD ["python", "api.py"]

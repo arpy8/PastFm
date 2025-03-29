@@ -1,0 +1,13 @@
+bs4>=0.0.2
+fastapi>=0.115.12
+gdata>=2.0.18
+google-api-python-client>=2.166.0
+ipykernel>=6.29.5
+jinja2>=3.1.6
+pillow>=11.1.0
+pymongo>=4.11.3
+pyperclip>=1.9.0
+python-dotenv>=1.1.0
+requests>=2.32.3
+uvicorn>=0.34.0
+websockets>=15.0.1
