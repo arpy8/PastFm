@@ -59,4 +59,3 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Author
 Made with ♪ by [arpy8](https://arpy8.com)  
-[![GitHub](https://img.shields.io/badge/GitHub-arpy8-black?style=flat-square&logo=github)](https://github.com/arpy8)
