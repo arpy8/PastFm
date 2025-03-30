@@ -1,5 +1,7 @@
 FROM python:3.11.10
 
+WORKDIR /code
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         gcc \
@@ -11,15 +13,17 @@ RUN uv venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY requirements.txt .
-RUN uv pip install --no-cache -r requirements.txt
+RUN uv pip install -r requirements.txt
 
-# RUN useradd -m appuser && chown -R appuser:appuser /code
-# USER appuser
+RUN useradd -m appuser 
+RUN mkdir -p /code/data /code/out
+RUN chown -R appuser:appuser /code
+USER appuser
 
-# COPY --chown=appuser:appuser . .
+COPY --chown=appuser:appuser . .
 
 EXPOSE 7860
 
-# ENV PYTHONUNBUFFERED=1
+ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "api.py"]
+CMD ["python", "/code/api.py"]

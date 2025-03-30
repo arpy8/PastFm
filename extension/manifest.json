@@ -1,7 +1,7 @@
 {
   "name": "PastFm",
   "version": "1.0.0",
-  "description": "Fetches last played songs from youtube music",
+  "description": "Fetches last played songs from YT Music",
   "manifest_version": 3,
   "author": "Arpit Sengar (arpy8)",
   "permissions": [

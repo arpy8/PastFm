@@ -2,5 +2,12 @@
 
 .venv/
 ws/
-
+out/
 .env
+
+__pycache__/
+
+PastFm-DB.db
+
+
+*copy*

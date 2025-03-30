@@ -60,9 +60,11 @@ def update_remote_db(data):
         return False, e
 
 if __name__=="__main__":
-    
     a = SongDetailFetcher()
-    test_data = a.get_details("https://music.youtube.com/watch?v=n8Rp_5lvhFI&list=RDAMVMXLx3ODo_j00")
+    test_data = a.get_details("https://music.youtube.com/watch?v=Ydv6usKn2rg&list=RDAMVMYdv6usKn2rg")
 
+    update_local_db(test_data)
+    update_remote_db(test_data)
+    
     time, name, artist, url, thumbnail = get_data()[-1]
     print(time, name, artist, url)
