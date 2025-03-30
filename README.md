@@ -42,7 +42,7 @@ PastFm is a simple tool that retrieves and displays the last played songs from *
 Check out the live rendering of the fetched songs:
 
 <a href="https://arpy8-pastfm-backend.hf.space/redirect">
-    <img src="http://localhost:7860/live" alt="" />
+    <img src="https://arpy8-pastfm-backend.hf.space/live" alt="" />
 </a>
 
 ## Contributing
