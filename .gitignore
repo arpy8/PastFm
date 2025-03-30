@@ -6,8 +6,7 @@ out/
 .env
 
 __pycache__/
+.ruff_cache/
 
 PastFm-DB.db
-
-
 *copy*
