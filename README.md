@@ -1,9 +1,14 @@
 # PastFm
+**Last.fm Scrobble Card for My GitHub Profile**
 
-**LastFm now playing card for my github profile**
+## Why I made this
+I had been using the [spotify-github-profile](https://github.com/kittinan/spotify-github-profile) banner for a long time. But ever since spotify people decided to ban their modded app, I found myself jumping between different platforms to listen to music. Hence I wanted this banner to showcase my listening activity from every platform, so I made a custom version for me!
+Also huge shoutout to [kittinan](https://github.com/kittinan). I used his default theme for the card, so it looks somewhat similar.
 
-## Description
-PastFm is a simple github readme card to display your listening activity.
+## Note
+A same copy of this repository can be found on huggingface as well, where I've hosted the API.
+
+[PastFm Backend - HF Spaces](https://huggingface.com/spaces/arpy8/pastfm-backend)
 
 ## Usage  
 1. Sign up for a Last.fm account and connect your Spotify or another music platform.  
