@@ -31,6 +31,7 @@ class SongDetailFetcher:
         self.lastfm_api_key = os.getenv("LASTFM_API_KEY")
         self.no_scrobble_url = f"https://ws.audioscrobbler.com/2.0/?api_key={self.lastfm_api_key}&method=User.getrecenttracks&user={self.user}&format=json&limit=1"
         self.scrobble_url = f"https://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user={self.user}&limit=1&extended=1&api_key={self.lastfm_api_key}&format=json"
+        # self.no_scrobble_url = f"https://ws.audioscrobbler.com/2.0/?api_key={self.lastfm_api_key}&method=User.getrecenttracks&user={self.user}&format=json&limit=1"
 
     def get_base64_image(self, url):
         try:
@@ -50,22 +51,25 @@ class SongDetailFetcher:
 
     def get_details(self):
         try:
-            rslt = requests.get(self.scrobble_url)
-            last_song = json.loads(rslt.text)['recenttracks']["track"][0]
+            scrobble_rslt = requests.get(self.scrobble_url)
+            no_scrobble_rslt = requests.get(self.no_scrobble_url)
+            
+            scrobble_rslt = json.loads(scrobble_rslt.text)['recenttracks']["track"][0]
+            no_scrobble_rslt = json.loads(no_scrobble_rslt.text)['recenttracks']["track"][0]
 
-            name = last_song["name"]
-            artist = last_song["artist"]["name"]
-            url = last_song["artist"]["url"]
-            timestamp = last_song["date"]["uts"]
-            thumbnail = last_song["image"][-1]["#text"]          
-            thumbnail = self.get_base64_image(thumbnail)
+            artist = no_scrobble_rslt["artist"]["#text"]
+            name = no_scrobble_rslt["name"]
+            is_playing = "@attr" in no_scrobble_rslt
+            url = no_scrobble_rslt["url"]
+            
+            thumbnail = self.get_base64_image(scrobble_rslt["image"][-1]["#text"])
                 
             return {
                 "song": name,
                 "artist": artist,
                 "thumbnail": thumbnail,
                 "url": url,
-                "timestamp": int(timestamp),
+                "is_playing": is_playing,
             }
 
         except Exception as e:
