@@ -34,6 +34,11 @@ class SongDetailFetcher:
 
     def get_base64_image(self, url):
         try:
+            if url == "":
+                with open("./static/temp.gif", "rb") as image_file:
+                    image_data = image_file.read()
+                    return base64.b64encode(image_data).decode('utf-8')
+                
             response = requests.get(url)
             response.raise_for_status()
             
@@ -53,9 +58,8 @@ class SongDetailFetcher:
             url = last_song["artist"]["url"]
             thumbnail = last_song["image"][-1]["#text"]
             
-            if thumbnail:
-                thumbnail = self.get_base64_image(thumbnail)
-            
+            thumbnail = self.get_base64_image(thumbnail)
+                
             return {
                 "song": name,
                 "artist": artist,
