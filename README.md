@@ -5,8 +5,13 @@
 ## Description
 PastFm is a simple github readme card to display your listening activity.
 
-<!-- ## Flowchart
-![flowchart](static/image-1.png) -->
+## Usage  
+1. Sign up for a Last.fm account and connect your Spotify or another music platform.  
+2. Add the following line to your README:  
+
+   ```  
+   ![](https://arpy8-pastfm-backend.hf.space/live?user=<your-lastfm-username>)  
+   ```
 
 ## Setting up the Python API with `uv`
 1. Setup the project using:

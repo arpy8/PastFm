@@ -1,5 +1,6 @@
 import logging
 import uvicorn
+from datetime import datetime
 from pydantic import BaseModel
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,18 +16,7 @@ logger = logging.getLogger(__name__)
 class Item(BaseModel):
     url: str
 
-app = FastAPI(
-    title="PastFm Backend", description="Welcome to PastFm's Backend", version="1.0"
-)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*", "chrome-extension://*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
+app = FastAPI(title="PastFm Backend", description="Welcome to PastFm's Backend", version="1.0")
 templates = Jinja2Templates(directory="templates")
 
 
@@ -35,21 +25,17 @@ async def display() -> RedirectResponse:
     return RedirectResponse(url="https://github.com/arpy8/PastFm")
 
 @app.get("/live")
-async def live_banner(request: Request) -> RedirectResponse:
-    from datetime import datetime
-
+async def live_banner(request: Request, user="arpy8", color="f70000") -> RedirectResponse:
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    return RedirectResponse(url=f"/render?t={timestamp}")
+    return RedirectResponse(url=f"/render?user={user}&color={color}&t={timestamp}")
 
 @app.get("/render")
-async def spotify_banner(request: Request, t: str = None) -> Response:
+async def spotify_banner(request: Request, user: str = "arpy8", color: str = "f70000", t: str = None) -> Response:
     try:
-        from datetime import datetime
-
         num_bar = 75
         css_bar = generate_css_bar(num_bar)
 
-        song_details = SongDetailFetcher()
+        song_details = SongDetailFetcher(user=user)
         result = song_details.get_details()
 
         if not result:
@@ -59,12 +45,11 @@ async def spotify_banner(request: Request, t: str = None) -> Response:
             )
         
         timestamp = t or datetime.now().strftime("%Y%m%d%H%M%S")
-
+        color = color or "f70000"
+        
         context = {
-            "height": "435",
-            "background_color": "#000000",
-            "bar_color": "#ff0000",
             "title_text": "Now playing",
+            "color": color,
             "song_name": result["song"],
             "artist_name": result["artist"],
             "thumbnail": result["thumbnail"],

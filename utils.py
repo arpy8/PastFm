@@ -26,8 +26,8 @@ def generate_css_bar(num_bar=75):
     return css_bar
 
 class SongDetailFetcher:
-    def __init__(self):
-        self.user = "arpy8"
+    def __init__(self, user="arpy8"):
+        self.user = user
         self.lastfm_api_key = os.getenv("LASTFM_API_KEY")
         self.no_scrobble_url = f"https://ws.audioscrobbler.com/2.0/?api_key={self.lastfm_api_key}&method=User.getrecenttracks&user={self.user}&format=json&limit=1"
         self.scrobble_url = f"https://ws.audioscrobbler.com/2.0/?method=user.getRecentTracks&user={self.user}&limit=1&extended=1&api_key={self.lastfm_api_key}&format=json"
