@@ -56,8 +56,8 @@ class SongDetailFetcher:
             name = last_song["name"]
             artist = last_song["artist"]["name"]
             url = last_song["artist"]["url"]
-            thumbnail = last_song["image"][-1]["#text"]
-            
+            timestamp = last_song["date"]["uts"]
+            thumbnail = last_song["image"][-1]["#text"]          
             thumbnail = self.get_base64_image(thumbnail)
                 
             return {
@@ -65,6 +65,7 @@ class SongDetailFetcher:
                 "artist": artist,
                 "thumbnail": thumbnail,
                 "url": url,
+                "timestamp": int(timestamp),
             }
 
         except Exception as e:

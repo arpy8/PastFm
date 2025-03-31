@@ -1,3 +1,4 @@
+import time
 import logging
 import uvicorn
 from datetime import datetime
@@ -48,7 +49,7 @@ async def spotify_banner(request: Request, user: str = "arpy8", color: str = "f7
         color = color or "f70000"
         
         context = {
-            "title_text": "Now playing",
+            "title_text": "Now playing" if abs(round(time.time())-result["timestamp"])<600 else "Last played",
             "color": color,
             "song_name": result["song"],
             "artist_name": result["artist"],
