@@ -54,12 +54,12 @@ PastFm is built with a simple but effective architecture that enables real-time 
 
 ```mermaid
 flowchart TD
-    A[GitHub Profile] -->|1. Request Banner| B[FastAPI Server]
-    B -->|2. Request Playing Track| C[Last.fm API]
-    C -->|3. Return Track Data| B
-    B -->|4. Process Data| D[Generate Visualization]
-    D -->|5. Render SVG| E[Jinja2 Template]
-    E -->|6. Return Banner| A
+    A[GitHub Profile] -->|Request Banner| B[FastAPI Server]
+    B -->|Request Playing Track| C[Last.fm API]
+    C -->|Return Track Data| B
+    B -->|Process Data| D[Generate Visualization]
+    D -->|Render SVG| E[Jinja2 Template]
+    E -->|Return Banner| A
 
     subgraph "PastFm Backend"
         B
