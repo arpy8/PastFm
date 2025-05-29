@@ -1,3 +1,12 @@
+---
+title: PastFm Backend
+emoji: 🐠
+colorFrom: yellow
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
 # PastFm
 
 <div align="center">
